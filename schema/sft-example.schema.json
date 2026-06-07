@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Alchemist-X/sft-trading-dataset/schema/sft-example.schema.json",
+  "title": "SFTTradingExample",
+  "description": "Schema for one supervised fine-tuning training example representing a trading reasoning trace. Each field documents the intended semantic — see SPEC.md Section 2 and 3 for full rationale.",
+  "type": "object",
+  "required": ["id", "version", "split", "source", "instrument", "timeframe", "timestamp_context", "system_prompt", "context", "reasoning", "decision"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique identifier for this training example (UUID v4)."
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version string (semver). Increment minor when fields are added, major when breaking changes occur.",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "split": {
+      "type": "string",
+      "enum": ["train", "val", "test"],
+      "description": "Dataset split assignment. Must be assigned by a time-ordered split (see SPEC.md Section 7) — never random split."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["own_journal", "kol_post", "research_note", "chat_log", "on_chain", "synthetic"],
+      "description": "Origin of the raw data. Determines default quality weight and legal risk tier."
+    },
+    "market": {
+      "type": "string",
+      "description": "Market category. Examples: 'crypto', 'equities', 'prediction_market'. TBD — see OPEN QUESTION Q1.",
+      "examples": ["crypto", "equities", "prediction_market"]
+    },
+    "instrument": {
+      "type": "string",
+      "description": "Trading instrument identifier. Format TBD pending market choice (Q1). Examples: 'BTC/USDT', 'ETH-PERP', 'AAPL', 'will-X-happen'.",
+      "examples": ["BTC/USDT", "ETH-PERP"]
+    },
+    "timeframe": {
+      "type": "string",
+      "description": "Primary analysis timeframe. TBD pending definition of 'trading idea' granularity (Q2).",
+      "examples": ["15m", "1h", "4h", "1d", "1w"]
+    },
+    "timestamp_context": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp representing the moment the context snapshot was taken — i.e., the information cutoff for this example. All market data in 'context' must be prior to this timestamp."
+    },
+    "system_prompt": {
+      "type": "string",
+      "minLength": 10,
+      "description": "The system/instruction prompt that frames the task for the model. Defines persona, market domain, output format requirements, and any style constraints."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 20,
+      "description": "The user-turn content: a natural language description of the market context at timestamp_context. Should include price action, relevant indicators, any macro/news catalysts, and optionally on-chain data or positioning. This is the model's input at inference time."
+    },
+    "reasoning": {
+      "type": "string",
+      "minLength": 50,
+      "description": "The chain-of-thought reasoning trace: the model's (or human's) step-by-step analysis leading to the decision. This is the primary training signal for teaching reasoning style. Target length: 150–600 tokens."
+    },
+    "decision": {
+      "type": "object",
+      "description": "Structured trade decision that concludes the reasoning. All sub-fields TBD pending Q2 (granularity of a trading idea).",
+      "required": ["direction"],
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": ["LONG", "SHORT", "FLAT", "WAIT"],
+          "description": "Directional bias or action. FLAT = exit/no position. WAIT = monitor, no entry yet."
+        },
+        "entry_zone": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 1,
+          "maxItems": 2,
+          "description": "Price range for entry [low, high] or a single market-order price [price]. Optional when direction is WAIT or FLAT."
+        },
+        "invalidation": {
+          "type": "number",
+          "description": "Price level at which the thesis is invalidated and the position should be closed. Required for LONG/SHORT."
+        },
+        "targets": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 1,
+          "description": "One or more price targets in ascending order for LONG, descending for SHORT."
+        },
+        "position_size_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Suggested position size as a percentage of total portfolio / risk capital. TBD — may be normalized differently depending on account type (Q7)."
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Subjective conviction score. 1 = speculative/low conviction, 5 = high conviction. Used for quality filtering."
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "description": "Realized outcome metadata. NEVER included in the model's input context — used only for quality filtering and train/test split stratification. See SPEC.md Section 6.",
+      "additionalProperties": false,
+      "properties": {
+        "realized_pnl_pct": {
+          "type": "number",
+          "description": "Realized PnL as a percentage of the risked capital (not total portfolio). Positive = profit."
+        },
+        "holding_period_hours": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Duration between entry and exit in hours."
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["WIN", "LOSS", "SCRATCH", "EXPIRED"],
+          "description": "Outcome classification. EXPIRED = thesis did not trigger (no trade taken, invalidation/target never hit within a defined window)."
+        },
+        "exit_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of trade exit. Optional."
+        }
+      }
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Composite quality score in [0, 1] computed by the labeling pipeline (see label.py). Combines outcome verdict, LLM-judge coherence score, source tier, and specificity signals."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Free-form taxonomy tags. Examples: 'breakout', 'macro-catalyst', 'funding-squeeze', 'liquidity-grab', 'range-trade'."
+    }
+  }
+}
