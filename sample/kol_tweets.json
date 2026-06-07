@@ -1,0 +1,90 @@
+[
+  {
+    "id": "1800000000000000001",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-10-12T06:30:00Z",
+    "text": "BTC looks juicy here at 61200. Liquidity sweep below 60800 done, now expecting continuation to 63500 then 65k. Stop under 60400. Longing 5% size. 思路: 日线高低点结构完整，CME缺口在63500附近，宏观risk-on情绪支撑。",
+    "trade": {
+      "symbol": "BTC/USDT",
+      "direction": "long",
+      "entry": 61200,
+      "target": 63500,
+      "stop": 60400,
+      "size": 5.0
+    },
+    "reasoning": "Liquidity sweep below 60800 completed. Daily structure intact with higher-low formation. CME gap at 63500 acts as magnet. Macro environment risk-on post FOMC. Entry on retest of the sweep level.",
+    "media": []
+  },
+  {
+    "id": "1800000000000000002",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-10-18T09:15:00Z",
+    "text": "ETH weakening hard. Below 2420 opens path to 2280 support. Shorting here 2430 with stop 2520. Target 2280 first, 2150 if breaks. Risk 3%. 资金费率连续负，空头主导，跟进。",
+    "trade": {
+      "symbol": "ETH/USDT",
+      "direction": "short",
+      "entry": 2430,
+      "target": 2280,
+      "stop": 2520,
+      "size": 3.0
+    },
+    "reasoning": "ETH showing relative weakness vs BTC. Funding rate has been consistently negative signaling short dominance. Break below 2420 (key daily support) confirms distribution. Target the 2280 structural support zone. Invalidate above 2520 (prior resistance).",
+    "media": ["chart_eth_4h.png"]
+  },
+  {
+    "id": "1800000000000000003",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-11-02T14:00:00Z",
+    "text": "SOL breakout from 6-week consolidation. 172 → targeting 185 then 200. Stop 165. Sized 4%. Altseason rotation underway — BTC dominance peaked.",
+    "trade": {
+      "symbol": "SOL/USDT",
+      "direction": "long",
+      "entry": 172,
+      "target": 185,
+      "stop": 165,
+      "size": 4.0
+    },
+    "reasoning": "SOL broke out of a 6-week symmetrical triangle on high volume. BTC dominance showing bearish divergence suggesting rotation into alts. First target 185 (previous ATH retest), second target 200 psychological level. Stop below the breakout base at 165.",
+    "media": []
+  },
+  {
+    "id": "1800000000000000004",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-11-10T08:45:00Z",
+    "text": "BTC 晒单 update: closed BTC long from 61200 at 63480. +3.7% 实现盈利. 整体思路成立，CME缺口基本填补。持有18小时。",
+    "trade": null,
+    "reasoning": "Trade closed at target. CME gap filled. Thesis played out as expected — liquidity sweep followed by upside reversion.",
+    "media": []
+  },
+  {
+    "id": "1800000000000000005",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-11-15T11:20:00Z",
+    "text": "DOGE looks like a trap here. Everyone long, funding through the roof at +0.12%. I'm waiting for a flush below 0.38 before considering entry. No trade yet — WAIT mode. 交易思路: 过热市场，等待更好的入场点。",
+    "trade": null,
+    "reasoning": "Funding rate at 0.12% indicates extreme long crowding. Price has run 40% in 5 days without meaningful pullback. Risk/reward for longs here is poor. Waiting for a liquidity flush below 0.38 support to enter with better R:R. This is a WAIT/monitor scenario.",
+    "media": []
+  },
+  {
+    "id": "1800000000000000006",
+    "author": "CryptoPhoenix",
+    "handle": "@CryptoPhoenix_kol",
+    "timestamp": "2025-11-22T07:00:00Z",
+    "text": "BTC回调至64800区间。周线结构依然多头，这里是加仓机会。入场64800，止损63200，目标68500。Confidence高——宏观顺风，ETF资金持续流入。",
+    "trade": {
+      "symbol": "BTC/USDT",
+      "direction": "long",
+      "entry": 64800,
+      "target": 68500,
+      "stop": 63200,
+      "size": 6.0
+    },
+    "reasoning": "BTC pulled back to weekly support at 64800 after breaking ATH. Macro tailwind from ETF inflows continues (7 consecutive days of positive flows). Structure remains bullish — higher highs, higher lows on weekly. R:R of approximately 2.3:1. High conviction entry.",
+    "media": ["btc_weekly_chart.png"]
+  }
+]

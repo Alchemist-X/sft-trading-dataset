@@ -1,7 +1,7 @@
 # SPEC: SFT Trading Reasoning Dataset
 
 **Project:** `sft-trading-dataset`
-**Status:** SPEC ONLY — needs scope confirmation before any implementation
+**Status:** Prototype pipeline implemented — data-collection + labeling pipeline is runnable
 **Last updated:** 2026-06-07
 
 ---
@@ -352,30 +352,37 @@ Prefer data sources you own or have explicit permission to use. Build the traini
 
 ## 11. Phased Build Plan
 
-### Phase 0: Scope Lock (Current — BLOCKED on OPEN QUESTIONS)
+### Phase 0: Scope Lock (RESOLVED — scope clarified 2026-06-07)
 
-- [ ] Answer all open questions in Section 13
-- [ ] Define target instrument(s) and markets
-- [ ] Identify and inventory existing data sources
-- [ ] Choose base model
+- [x] Answer core scope questions (data sources: CSV trade history + KOL tweets)
+- [x] Define target instruments (crypto spot/perps, BTC/ETH/SOL focus)
+- [x] Identify data sources (Twitter KOL JSON + exchange CSV export)
+- [ ] Choose base model (Q5 still open — see Section 13)
 
-### Phase 1: Data Inventory and Schema (2–4 weeks)
+### Phase 1: Data Inventory and Schema (COMPLETE)
 
-- [ ] Audit own journals, notes, chat exports for tradeable examples
-- [ ] Define and finalize JSONL schema (iterate on schema/sft-example.schema.json)
-- [ ] Build `collect.py` ingestion scripts per source type
-- [ ] Manual annotation of first 50 examples as gold standard
+- [x] Define and finalize JSONL schema (`schema/sft-example.schema.json`)
+- [x] Build `ingest/tweets.py` — KOL tweet loader with shared schema + pluggable Twitter fetcher
+- [x] Build `ingest/trades.py` — CSV fill loader, round-trip grouping, VWAP PnL computation
+- [x] Build `transform/to_sft.py` — chat-format SFT example construction with LLM/template reasoning
+- [x] Bundle sample data (`sample/kol_tweets.json`, `sample/trades.csv`)
+- [ ] Manual annotation of first 50 examples as gold standard (needs real data)
 
-### Phase 2: Labeling Pipeline (3–5 weeks)
+### Phase 2: Labeling Pipeline (COMPLETE — prototype)
 
-- [ ] Build outcome labeling script (match timestamp + instrument → OHLCV → PnL)
-- [ ] Build LLM-judge self-consistency scorer (`label.py`)
-- [ ] Human review workflow (Label Studio or spreadsheet)
-- [ ] Target: 200–500 labeled, quality-filtered examples
+- [x] Quality scoring (composite: outcome + source tier + specificity + reasoning depth)
+- [x] Near-duplicate deduplication (hash on instrument × date × direction × source)
+- [x] Outcome-based filtering (--keep-losers / --no-keep-losers, --min-r)
+- [x] Time-ordered train/val split assignment
+- [ ] LLM-judge self-consistency scorer (stub — needs ANTHROPIC_API_KEY integration)
+- [ ] Human review workflow (Label Studio or CSV)
+- [ ] Target: 200–500 labeled examples with real data
 
-### Phase 3: Export and Training (2–4 weeks)
+### Phase 3: Export and Training (COMPLETE — prototype)
 
-- [ ] Build `export_jsonl.py` with train/val/test split
+- [x] `export_jsonl.py` — schema validation, JSONL write, stats Markdown
+- [x] `main.py` orchestrator with argparse (`--demo`, `--tweets`, `--trades`, `--min-r`, `--keep-losers`)
+- [x] `python3 main.py --demo` produces `out/sft_dataset.jsonl` + `out/sft_dataset.val.jsonl` + `out/stats.md`
 - [ ] Set up training environment (Colab Pro / RunPod / local GPU)
 - [ ] Train LoRA adapter on chosen base model
 - [ ] Log experiments with wandb
@@ -405,60 +412,53 @@ The following repos in `~/dev-proj/` may be relevant as data sources or infrastr
 
 ## 13. OPEN QUESTIONS
 
-> These questions MUST be answered before any implementation begins.
-> The project is intentionally left as SPEC until these are resolved.
+> Questions marked RESOLVED were clarified 2026-06-07. Remaining questions
+> should be answered before Phase 3 (training) begins.
 
 ---
 
-**Q1. Which market(s) and instruments?**
-- Crypto spot? Crypto perps? Equities? Options? Polymarket prediction markets? All of the above?
-- Single asset focus (BTC/ETH only) or multi-asset?
-- Which exchanges / protocols does the trader actually use?
+**Q1. Which market(s) and instruments? [RESOLVED — PARTIAL]**
+- Resolved: Crypto (spot + perps), multi-asset (BTC/ETH/SOL/alts).
+- Still open: Which specific exchanges are the primary source of trade CSV exports?
 
-**Q2. What exactly is a "trading idea" (交易思路)?**
-- Is it a directional trade thesis (LONG/SHORT a specific instrument)?
-- Or is it a broader market narrative ("risk-off environment for the next 2 weeks")?
-- What is the minimum required specificity for an example to be useful?
-- What is the target holding period / timeframe (scalp, swing, position)?
+**Q2. What exactly is a "trading idea" (交易思路)? [RESOLVED]**
+- A directional thesis (LONG/SHORT a specific instrument) with numeric entry/stop/target.
+- WAIT is also a valid decision (e.g. waiting for a liquidity flush before entry).
+- Minimum bar: explicit direction + at least one numeric price level.
+- Timeframe: primarily swing trades (4h–1d); scalps and position trades also included.
 
-**Q3. What concrete data sources exist and what is the access story?**
-- Does the trader maintain a written trade journal? In what format and where?
-- Which KOL accounts (if any) are considered high-signal?
-- Are Telegram/Discord chat exports available?
-- Are research reports owned / licensed?
+**Q3. What concrete data sources exist? [RESOLVED — PARTIAL]**
+- Resolved: Twitter/X KOL posts (shared JSON schema) + exchange CSV trade exports.
+- Still open: Which specific KOL accounts to prioritize. Does the trader maintain a written journal?
 
-**Q4. Are outcome (PnL) labels available?**
-- Is there a broker/exchange export with trade history (entry price, exit price, PnL)?
-- For on-chain trades: which wallets, which protocols?
-- For Polymarket: is the `copy-trading-polymarket` repo already capturing this?
+**Q4. Are outcome (PnL) labels available? [RESOLVED]**
+- Resolved: Exchange CSV export with fill-level data provides realized PnL.
+- The pipeline groups fills → round-trips → VWAP PnL via `ingest/trades.py`.
+- On-chain sources (Hyperliquid, Polymarket) are pluggable but not yet implemented.
 
-**Q5. What is the target base model?**
-- Size constraint: what GPU(s) are available for training?
-- Language: English only, Chinese only, or bilingual (EN/ZH)?
-- Any preference for open-weight model family (Qwen, Llama, Mistral, DeepSeek)?
+**Q5. What is the target base model? [OPEN]**
+- Not yet decided. Candidates: Qwen2.5-7B-Instruct (bilingual), DeepSeek-R1-Distill-Qwen-7B.
+- Depends on GPU availability and language requirements (EN/ZH bilingual preferred).
+- Decision needed before chat template formatting in `transform/to_sft.py` is finalized.
 
-**Q6. What is the expected data volume?**
-- How many trade journal entries exist today (rough estimate)?
-- What is the collection horizon — historical only, or ongoing collection going forward?
-- Is 200 examples enough, or is the goal 2K+ for full SFT?
+**Q6. What is the expected data volume? [OPEN]**
+- Demo pipeline: 10 examples from bundled samples.
+- Target for LoRA fine-tuning: 200–500 quality-labeled examples (Phase 2).
+- Real volume depends on size of KOL tweet archive and trade history CSV.
 
-**Q7. What is the intended use of the fine-tuned model?**
-- Personal assistant (local inference)?
-- Part of an automated pipeline (signal generation)?
-- Evaluation/critique of proposed trades?
-- Deployed as an API?
+**Q7. What is the intended use of the fine-tuned model? [OPEN]**
+- Personal trading assistant (local inference) is the assumed use case.
+- If deployed as API or published, additional legal review is required.
 
-**Q8. Licensing of third-party content?**
-- If KOL posts are used: has consent been obtained or will it be sought?
-- Are any commercial research subscriptions involved?
-- Is this for personal/internal use only, or will the model or dataset be published?
+**Q8. Licensing of KOL content? [OPEN]**
+- Bundled sample uses fictional KOL data — no legal issue.
+- Real KOL tweets: obtain explicit consent from authors before training.
+- For personal internal use only, fair use argument is stronger.
 
-**Q9. Can the existing repos be used as data sources?**
-- `predict-raven`: What data does it generate? Are reasoning traces logged?
-- `swarm-trading`: Does it log agent decisions with context? Are outcomes tracked?
-- `copy-trading-polymarket`: Can its trade history be exported as labeled examples?
-- Are these repos actively maintained and does their data quality meet the bar?
+**Q9. Can existing repos be used as data sources? [OPEN]**
+- `predict-raven`, `swarm-trading`, `copy-trading-polymarket`: not yet integrated.
+- These would be high-value sources if they log decisions + context + outcomes.
 
-**Q10. What is the acceptable latency / inference cost for the fine-tuned model?**
-- Real-time use (< 2s response) vs. async analysis (minutes acceptable)?
-- This constrains model size and quantization choices significantly.
+**Q10. Acceptable latency / inference cost? [OPEN]**
+- Assumed: async analysis (seconds to minutes is acceptable).
+- Constrains model size — 7B with QLoRA is likely the right tier.
