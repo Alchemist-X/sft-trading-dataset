@@ -1,0 +1,13 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='280' viewBox='0 0 1200 280' role='img' aria-label='SFT Trading Dataset'>
+ <defs>
+  <linearGradient id='bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#0b0b12'/><stop offset='1' stop-color='#16161f'/></linearGradient>
+  <linearGradient id='ac' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#f59e0b'/><stop offset='1' stop-color='#fbbf24'/></linearGradient>
+ </defs>
+ <rect width='1200' height='280' fill='url(#bg)'/>
+ <rect width='1200' height='6' fill='url(#ac)'/>
+ <circle cx='1050' cy='150' r='150' fill='#f59e0b' opacity='0.10'/>
+ <circle cx='1150' cy='66' r='70' fill='#fbbf24' opacity='0.08'/>
+ <text x='80' y='126' font-family='Segoe UI,Helvetica,Arial,sans-serif' font-size='56' font-weight='700' fill='#ffffff'>SFT Trading Dataset</text>
+ <text x='82' y='174' font-family='Segoe UI,Helvetica,Arial,sans-serif' font-size='25' fill='#9aa4b2'>Build an SFT dataset of trading reasoning from trades + KOL posts</text>
+ <text x='82' y='226' font-family='Consolas,monospace' font-size='16' fill='#f59e0b' letter-spacing='1'>Python · stdlib · MIT</text>
+</svg>

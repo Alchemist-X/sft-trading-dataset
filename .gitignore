@@ -1,6 +1,14 @@
 .DS_Store
 __pycache__/
 *.pyc
+*.pyo
 .env
 out/
 *.egg-info/
+node_modules/
+cache/
+broadcast/
+.venv/
+venv/
+dist/
+build/
